@@ -13,6 +13,7 @@ let folders = [];
 
 //Fetching CIP folder names, then fetching README raw files
 let fetchFolderNames = async () => {
+    //Fetching list of CIP folders 
     axios.get(repoApiUrl).then(response => {
         let cipFolderNames = []
         response.data.tree.map((e) => {
@@ -21,6 +22,7 @@ let fetchFolderNames = async () => {
             }
         })
         folders.splice(0, folders.length, ...cipFolderNames)
+        //Fetching readmes and locally downloading data
         folders.forEach(async (folder) => {
             const content = await fetchFileContent(folder);
         });
@@ -29,22 +31,21 @@ let fetchFolderNames = async () => {
     })
 }
 
-//Fetching README.md files in every CIP folder, using some regex to clear unused information
-let fetchFileContent = async (folder) => {
+//Fetching README.md files in every CIP folder and downloading it locally
+let fetchFileContent = async (fileName) => {
     try {
-        const response = await axios.get(`${repoBaseUrl}` + "/" + `${folder}` + "/README.md");
+        const response = await axios.get(`${repoBaseUrl}` + "/" + `${fileName}` + "/README.md");
         let rawFile = response.data
             .replace("](", "")
             .replace(".png)", ".png")
             .replace(".jpg)", ".jpg")
             .replace(".jpeg)", ".jpeg")
 
-        fs.writeFile(___dirname + cipDocsPath + `${folder}` + ".md", rawFile, (err) => {
+        fs.writeFile(___dirname + cipDocsPath + `${fileName}` + ".md", rawFile, (err) => {
             if (err)
-                console.log(err, "CHECK FOR ERROR");
+                console("Oops, there has been a problem with downloading " + `${fileName}`)
             else {
-                console.log("File written successfully\n");
-                console.log("The written has the following contents:");
+                console.log("File " + `${fileName}` + " has been added to " + `${cipDocsPath + fileName}`);
             }
         });
     }
@@ -55,6 +56,7 @@ let fetchFileContent = async (folder) => {
 
 //Calling script
 let main = async () => {
+    console.log("CIP Content Downloading...");
     const data = await fetchFolderNames();
 }
 
