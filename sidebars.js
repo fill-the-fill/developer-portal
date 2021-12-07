@@ -66,7 +66,22 @@ module.exports = {
     ],
     "Be Part of the Governance": [
       "governance/overview", 
-      "governance/cardano-improvement-proposals",
+      {
+        type: "category",
+        label: "Cardano Improvement Proposals (CIPs)",
+        items: [
+          "governance/cardano-improvement-proposals",
+          {
+            type: "category",
+            label: "Browse CIPs",
+            items: [
+              "governance/cardano-improvement-proposals/CIP-0002",
+              "governance/cardano-improvement-proposals/CIP-0003",
+              "governance/cardano-improvement-proposals/CIP-0004",
+            ],
+          },
+        ],
+      },
       "governance/project-catalyst", 
     ],
     "Operate a Stake Pool": [

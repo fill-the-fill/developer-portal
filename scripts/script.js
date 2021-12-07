@@ -4,7 +4,7 @@ const path = require("path")
 
 const repoBaseUrl = 'https://raw.githubusercontent.com/cardano-foundation/CIPs/master';
 const repoApiUrl = "https://api.github.com/repos/cardano-foundation/CIPs/git/trees/master"
-const cipDocsPath = "/docs/cardano-improvement-proposals/";
+const cipDocsPath = "/docs/governance/cardano-improvement-proposals/";
 const ___dirname = path.resolve(path.dirname(''));
 // const cipRegex = /\]\(.*?.png\)|\]\(.*?.jpg\)|\]\(.*?.jpeg\)/gm;
 
@@ -41,13 +41,14 @@ let fetchFileContent = async (fileName) => {
             .replace(".jpg)", ".jpg")
             .replace(".jpeg)", ".jpeg")
 
+        //Adding sidebar_label tag to each document
         const sideBarLabel = "--- \nsidebar_label: " + `${fileName}`
 
         fs.writeFile(___dirname + cipDocsPath + `${fileName}` + ".md",  sideBarLabel + rawFile.slice(3), (err) => {
             if (err)
-                console("Oops, there has been a problem with downloading " + `${fileName}`)
+                console("Oops, there has been a problem with downloading " + fileName)
             else {
-                console.log("File " + `${fileName}` + " has been added to " + `${cipDocsPath + fileName}`);
+                console.log("File " + fileName + " has been added to " + cipDocsPath + fileName);
             }
         });
     }
