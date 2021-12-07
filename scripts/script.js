@@ -35,13 +35,15 @@ let fetchFolderNames = async () => {
 let fetchFileContent = async (fileName) => {
     try {
         const response = await axios.get(`${repoBaseUrl}` + "/" + `${fileName}` + "/README.md");
-        let rawFile = response.data
+        const rawFile = response.data
             .replace("](", "")
             .replace(".png)", ".png")
             .replace(".jpg)", ".jpg")
             .replace(".jpeg)", ".jpeg")
 
-        fs.writeFile(___dirname + cipDocsPath + `${fileName}` + ".md", rawFile, (err) => {
+        const sideBarLabel = "--- \nsidebar_label: " + `${fileName}`
+
+        fs.writeFile(___dirname + cipDocsPath + `${fileName}` + ".md",  sideBarLabel + rawFile.slice(3), (err) => {
             if (err)
                 console("Oops, there has been a problem with downloading " + `${fileName}`)
             else {
