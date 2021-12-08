@@ -1,12 +1,12 @@
-const axios = require('axios');
 const fs = require('fs')
 const path = require("path")
+const axios = require('axios');
 
-const repoBaseUrl = 'https://raw.githubusercontent.com/cardano-foundation/CIPs/master';
-const repoApiUrl = "https://api.github.com/repos/cardano-foundation/CIPs/git/trees/master"
+const gitBaseUrl = 'https://github.com/cardano-foundation/CIPs/tree/master'
+const rawBaseUrl = 'https://raw.githubusercontent.com/cardano-foundation/CIPs/master';
+const apiBaseUrl = "https://api.github.com/repos/cardano-foundation/CIPs/git/trees/master"
 const cipDocsPath = "/docs/governance/cardano-improvement-proposals/";
 const ___dirname = path.resolve(path.dirname(''));
-// const cipRegex = /\]\(.*?.png\)|\]\(.*?.jpg\)|\]\(.*?.jpeg\)/gm;
 
 //Array to store CIP folders 
 let folders = [];
@@ -14,7 +14,7 @@ let folders = [];
 //Fetching CIP folder names, then fetching README raw files
 let fetchFolderNames = async () => {
     //Fetching list of CIP folders 
-    axios.get(repoApiUrl).then(response => {
+    axios.get(apiBaseUrl).then(response => {
         let cipFolderNames = []
         response.data.tree.map((e) => {
             if (e.path.startsWith("CIP")) {
@@ -34,17 +34,34 @@ let fetchFolderNames = async () => {
 //Fetching README.md files in every CIP folder and downloading it locally
 let fetchFileContent = async (fileName) => {
     try {
-        const response = await axios.get(`${repoBaseUrl}` + "/" + `${fileName}` + "/README.md");
+        const response = await axios.get(`${rawBaseUrl}` + "/" + `${fileName}` + "/README.md");
+
+        //Cleaning image files
         const rawFile = response.data
             .replace("](", "")
             .replace(".png)", ".png")
             .replace(".jpg)", ".jpg")
             .replace(".jpeg)", ".jpeg")
 
-        //Adding sidebar_label tag to each document
-        const sideBarLabel = "--- \nsidebar_label: " + `${fileName}`
+        //Stripping HTML 
+        const stripHTML = rawFile.slice(3).replace(/<[^>]+>/g, '')
 
-        fs.writeFile(___dirname + cipDocsPath + `${fileName}` + ".md",  sideBarLabel + rawFile.slice(3), (err) => {
+        //Adding sidebar_label tag to each document and stripping HTML
+        const sideBarLabelValue = fileName === "CIP-0001" ? "Overview" : fileName
+        const sideBarLabelKey = "--- \nsidebar_label: " + sideBarLabelValue
+
+        //Some of the files contain symbol that hasn't been removed by stripHTML, I'm using extra fucntiont to clean the result
+        const cleanerTextResult = stripHTML.split("\n")
+            .map(s => s.includes("###" && "##" && "#") ? s.replace(/\\/g, '') : s && s.includes("](../") ? s.replace("../", "./") : s
+            )
+            .join("\n");
+
+        const overCleanResult = cleanerTextResult.split("\n")
+            .map(s => s.includes("](./") ? s.replace("./", gitBaseUrl + '/' + fileName + '/') : s)
+            .join("\n");
+
+        //Downloading files locally
+        fs.writeFile(___dirname + cipDocsPath + fileName + ".md", sideBarLabelKey + overCleanResult, (err) => {
             if (err)
                 console("Oops, there has been a problem with downloading " + fileName)
             else {
