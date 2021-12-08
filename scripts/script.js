@@ -44,24 +44,24 @@ let fetchFileContent = async (fileName) => {
             .replace(".jpeg)", ".jpeg")
 
         //Stripping HTML 
-        const stripHTML = rawFile.slice(3).replace(/<[^>]+>/g, '')
-
+        const stripHTML = rawFile.slice(3).replace(/<[^>]+>/g, '').split("\n")
         //Adding sidebar_label tag to each document and stripping HTML
         const sideBarLabelValue = fileName === "CIP-0001" ? "Overview" : fileName
         const sideBarLabelKey = "--- \nsidebar_label: " + sideBarLabelValue
 
         //Some of the files contain symbol that hasn't been removed by stripHTML, I'm using extra fucntiont to clean the result
-        const cleanerTextResult = stripHTML.split("\n")
-            .map(s => s.includes("###" && "##" && "#") ? s.replace(/\\/g, '') : s && s.includes("](../") ? s.replace("../", "./") : s
-            )
-            .join("\n");
+        const cleanerStringResult =
+            stripHTML.map(s => s.includes("###" && "##" && "#") ? s.replace(/\\/g, '') : s
+                && s.includes("](../") ? s.replace("../", "./") : s
+            );
 
-        const overCleanResult = cleanerTextResult.split("\n")
-            .map(s => s.includes("](./") ? s.replace("./", gitBaseUrl + '/' + fileName + '/') : s)
-            .join("\n");
+        const fileRedirectStringResult =
+            cleanerStringResult.map(s => s.includes("](./") ? s.replace("](./", "./", gitBaseUrl + '/' + fileName + '/') : s
+                && s.includes("# Abstract") && !s.includes("## Abstract")? s.replace("#", "##") : s
+            ).join("\n")
 
         //Downloading files locally
-        fs.writeFile(___dirname + cipDocsPath + fileName + ".md", sideBarLabelKey + overCleanResult, (err) => {
+        fs.writeFile(___dirname + cipDocsPath + fileName + ".md", sideBarLabelKey + fileRedirectStringResult, (err) => {
             if (err)
                 console("Oops, there has been a problem with downloading " + fileName)
             else {
