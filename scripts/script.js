@@ -54,9 +54,9 @@ let fetchFileContent = async (fileName) => {
             stripHTML.map(s => s.includes("###" && "##" && "#") ? s.replace(/\\/g, '') : s
                 && s.includes("](../") ? s.replace("../", "./") : s
             );
-
         const fileRedirectStringResult =
             cleanerStringResult.map(s => s.includes("](./") ? s.replace("](./", "./", gitBaseUrl + '/' + fileName + '/') : s
+            //Fixed Abstract headers to look the same
                 && s.includes("# Abstract") && !s.includes("## Abstract")? s.replace("#", "##") : s
             ).join("\n")
 
