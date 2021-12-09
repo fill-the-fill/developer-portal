@@ -39,4 +39,5 @@ yarn-error.log*
 .idea
 
 # CIPs
+cardano-improvement-proposals/*
 !cardano-improvement-proposals/.gitkeep
