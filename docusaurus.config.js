@@ -221,6 +221,10 @@ module.exports = {
             to: '/docs/governance/project-catalyst', 
             from: ['/docs/fund-your-project/project-catalyst', '/docs/fund-your-project/alternatives']
           },
+          {
+            to: '/docs/governance/cardano-improvement-proposals/CIP-0001',
+            from: '/docs/governance/cardano-improvement-proposals',
+          }
         ],
       },
     ],
