@@ -41,3 +41,7 @@ yarn-error.log*
 # CIPs
 cardano-improvement-proposals/*
 !cardano-improvement-proposals/.gitkeep
+
+# CIP images
+cip-images/*
+!cip-images/.gitkeep
