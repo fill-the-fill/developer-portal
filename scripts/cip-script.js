@@ -1,17 +1,18 @@
 const fs = require('fs')
-const path = require("path")
+const path = require('path')
 const axios = require('axios')
 
 const gitBaseUrl = 'https://github.com/cardano-foundation/CIPs/tree/master'
 const rawBaseUrl = 'https://raw.githubusercontent.com/cardano-foundation/CIPs/master'
-const apiBaseUrl = "https://api.github.com/repos/cardano-foundation/CIPs/git/trees/master"
-const cipDocsPath = "/docs/governance/cardano-improvement-proposals/"
-const cipStaticPath = "/static/img/cip-images/"
+const apiBaseUrl = 'https://api.github.com/repos/cardano-foundation/CIPs/git/trees/master'
+const cipDocsPath = '/docs/governance/cardano-improvement-proposals/'
+const cipStaticPath = '/static/img/cip-images/'
 const ___dirname = path.resolve(path.dirname(''))
 const imageRegex = /\]\(.*?.png\)|\]\(.*?.jpg\)|\]\(.*?.jpeg\)/gm
 
 // Array to store CIP folders 
 let folders = []
+
 
 // Fetching CIP folder names, then fetching README raw files
 let fetchFolderNames = async () => {
@@ -19,7 +20,7 @@ let fetchFolderNames = async () => {
     axios.get(apiBaseUrl).then(response => {
         let cipFolderNames = []
         response.data.tree.map((e) => {
-            if (e.path.startsWith("CIP")) {
+            if (e.path.startsWith('CIP')) {
                 cipFolderNames.push(e.path)
             }
         })
@@ -42,32 +43,46 @@ let fetchFileContent = async (fileName) => {
         // Checking if file starts with 3 `---` && Removing it if it starts with `---`
         const checkForMd = response.data.substring(0, 3) === '---' ? response.data.slice(3) : response.data
 
-        // Stripping HTML && Splitting
-        const stripHTML = checkForMd.replace(/<[^>]+>/g, '').split("\n")
-
         // Adding sidebar_label tag to each document and stripping HTML
-        const sideBarLabelKey = "--- \nsidebar_label: " + fileName
+        const sideBarLabelKey = '--- \nsidebar_label: ' + fileName
+
+        // Stripping HTML
+        const stripHTML = sideBarLabelKey + checkForMd.replace(/<[^>]+>/g, '')
+
+        // Finding title value
+        const title = stripHTML.match(/(Title:).*(?=\nAuthors:)/g)
+
+        // Finding CIP number value
+        const cipNumber = stripHTML.match(/(CIP:).*(?=\nTitle:)/g)
+
+        // Replacing sideBarLabel with a new value
+        const replaceSideBarLabel =
+            stripHTML.replace(/(sidebar_label:).*(?=\nCIP:)/g,
+                `$1 (${cipNumber[0].substr(cipNumber[0].indexOf(':') + 1)} )${title[0].substr(title[0].indexOf(':') + 1)}`)
 
         // Stripping `\` symbol from headlines 
         const cleanerStringResult =
-            stripHTML.map(s => s.includes("####" && "###" && "##" && "#") ? s.replace(/\\/g, '') : s
+            replaceSideBarLabel.split('\n').map(s => s.includes('####' && '###' && '##' && '#') ? s.replace(/\\/g, '') : s
                 // Fixing parent links to CIPs
-                && s.includes("](../") ? s.replace("../", "./") : s
+                && s.includes('](../') ? s.replace('../', './') : s
+                    // Changing Title to lowercase
+                    && s.includes('Title: ') ? s.replace('Title: ', 'title: ') : s
             )
+
         // Rewritting relative URLs to absolute URLs 
         const fileRedirectStringResult =
-            cleanerStringResult.map(s => s.includes("](./") ? s.replace("](./", "](" + gitBaseUrl + '/' + fileName + '/') : s                // Enforcing H2 headlines (Docusaurus doesn't like that)
-                && s.includes("# Abstract") && !s.includes("## Abstract") ? s.replace("#", "##") : s
+            cleanerStringResult.map(s => s.includes('](./') ? s.replace('](./', '](' + gitBaseUrl + '/' + fileName + '/') : s                // Enforcing H2 headlines (Docusaurus doesn't like that)
+                && s.includes('# Abstract') && !s.includes('## Abstract') ? s.replace('#', '##') : s
                     // Checking if absolute URLs are empty and removing them
-                    && s.includes("]()") ? s.replace("]()", "]") : s
-            ).join("\n")
+                    && s.includes(']()') ? s.replace(']()', ']') : s
+            ).join('\n')
 
         // Downloading files locally
-        fs.writeFile(___dirname + cipDocsPath + fileName + ".md", sideBarLabelKey + fileRedirectStringResult, (err) => {
+        fs.writeFile(`${___dirname}${cipDocsPath}${fileName}.md`, fileRedirectStringResult, (err) => {
             if (err)
-                console.log("Oops, there has been a problem with downloading " + fileName, err)
+                console.log('Oops, there has been a problem with downloading ' + fileName, err)
             else {
-                console.log("File " + fileName + " has been added to " + cipDocsPath + fileName)
+                console.log('File ' + fileName + ' has been added to ' + cipDocsPath + fileName)
             }
         })
 
@@ -76,14 +91,14 @@ let fetchFileContent = async (fileName) => {
 
         // Downloading Images for CIPs
         cipImageResources && cipImageResources.map(async s => {
-            if (s.indexOf("http://") < 0 && s.indexOf("https://") < 0) {
+            if (s.indexOf('http://') < 0 && s.indexOf('https://') < 0) {
 
                 // Cleaning image names to fetch 
                 const imageName = s
-                    .replace("](", "")
-                    .replace(".png)", ".png")
-                    .replace(".jpg)", ".jpg")
-                    .replace(".jpeg)", ".jpeg")
+                    .replace('](', '')
+                    .replace('.png)', '.png')
+                    .replace('.jpg)', '.jpg')
+                    .replace('.jpeg)', '.jpeg')
 
                 // Fetchibg images 
                 const imageResponse = await axios.get(`${rawBaseUrl}/${fileName}/${imageName}`, { responseType: 'arraybuffer' })
@@ -91,39 +106,39 @@ let fetchFileContent = async (fileName) => {
                 // Creating CIP image folder && CIP image file
                 fs.rmSync(___dirname + cipStaticPath + fileName, { recursive: true }),
                     fs.mkdirSync(___dirname + cipStaticPath + fileName, { recursive: true }),
-                    fs.writeFileSync(___dirname + cipStaticPath + fileName + "/" + imageName, imageResponse.data, (err) => {
+                    fs.writeFileSync(___dirname + cipStaticPath + fileName + '/' + imageName, imageResponse.data, (err) => {
                         if (err)
-                            console.log("Oops, there has been a problem with downloading " + fileName, err)
+                            console.log('Oops, there has been a problem with downloading ' + fileName, err)
                         else {
-                            console.log("File " + fileName + " has been added to " + cipDocsPath + fileName)
+                            console.log('File ' + fileName + ' has been added to ' + cipDocsPath + fileName)
                         }
                     })
 
                 // Rewritting relative image URLs to absolute image URLs
                 const MarkdownsWithImages =
-                    fileRedirectStringResult.split("\n").map(
-                        s => s.includes(imageName) ? s.replace("](", `](../../..${cipStaticPath}${fileName}/`) : s
-                    ).join("\n")
+                    fileRedirectStringResult.split('\n').map(
+                        s => s.includes(imageName) ? s.replace('](', `](../../..${cipStaticPath}${fileName}/`) : s
+                    ).join('\n')
 
                 // Downloading files with images locally  
-                fs.writeFile(___dirname + cipDocsPath + fileName + ".md", sideBarLabelKey + MarkdownsWithImages, (err) => {
+                fs.writeFile(___dirname + cipDocsPath + fileName + '.md', MarkdownsWithImages, (err) => {
                     if (err)
-                        console.log("Oops, there has been a problem with downloading " + fileName, err)
+                        console.log('Oops, there has been a problem with downloading ' + fileName, err)
                     else {
-                        console.log("File " + fileName + " has been added to " + cipDocsPath + fileName)
+                        console.log('File ' + fileName + ' has been added to ' + cipDocsPath + fileName)
                     }
                 })
             }
         })
     }
     catch (error) {
-        console.log(error, "oops, there is an error")
+        console.log(error, 'oops, there is an error')
     }
 }
 
 //Calling script
 let main = async () => {
-    console.log("CIP Content Downloading...")
+    console.log('CIP Content Downloading...')
     const data = await fetchFolderNames()
 }
 
