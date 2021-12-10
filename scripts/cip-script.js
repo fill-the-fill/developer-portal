@@ -58,7 +58,7 @@ let fetchFileContent = async (fileName) => {
         // Replacing sideBarLabel with a new value
         const replaceSideBarLabel =
             stripHTML.replace(/(sidebar_label:).*(?=\nCIP:)/g,
-                `$1 (${cipNumber[0].substr(cipNumber[0].indexOf(':') + 1)} )${title[0].substr(title[0].indexOf(':') + 1)}`)
+                `$1 (${cipNumber[0].substr(cipNumber[0].indexOf(' ') + 1)})${title[0].substr(title[0].indexOf(':') + 1)}`)
 
         // Stripping `\` symbol from headlines 
         const cleanerStringResult =
