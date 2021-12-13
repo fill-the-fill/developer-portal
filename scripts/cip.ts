@@ -95,10 +95,10 @@ const stringManipulation = (content: string, cipName: string) => {
     // Fixing broken readme.md links
     content =  content.replace(/]\(\..\/README.md/gm, '](' + repoBaseUrl) 
 
-    // Fixing parent folder links to other files
-    content = content.replace("](CIP-0017.json)", "](" + repoBaseUrl + "/CIP-0017CIP-0017.json)")
+    // Fixing parent folder links to other files (Needs to be changed, for now takes care only of CIP-17)
+    content = content.replace("](CIP-0017.json)", "](" + repoBaseUrl + "/CIP-0017/CIP-0017.json)")
    
-    // Stripping `\` symbol from headlines ===============(NEEDS REGEX)
+    // Stripping `\` symbol from headlines (Needs REGEX)
     content =  content.includes('####' && '###' && '##' && '#') ? content.replace(/\\/g, '') : content
 
     // Enforcing H2 headlines (Docusaurus doesn't like that)
