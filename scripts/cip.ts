@@ -1,5 +1,5 @@
 import fetch from 'node-fetch'
-import path from 'path'
+import path from "path"
 import * as fs from 'fs'
 
 const repoRawBaseUrl: string = 'https://raw.githubusercontent.com/cardano-foundation/CIPs/master/'
@@ -7,9 +7,8 @@ const repoBaseUrl = 'https://github.com/cardano-foundation/CIPs/tree/master'
 const readmeUrl: string = '/README.md'
 const readmeRegex = /\.\/CIP.*?\//gm
 const cipRegex = /\]\(.*?.png\)|\]\(.*?.jpg\)|\]\(.*?.jpeg\)/gm
-const cipDocsPath = './docs/governance/cardano-improvement-proposals'
-const cipStaticResourcePath = '/static/img/cip/'
-const dirPath = path.resolve(path.dirname(''))
+const cipDocsPath = "./docs/governance/cardano-improvement-proposals"
+const cipStaticResourcePath = "/static/img/cip/"
 
 const getStringContentAsync = async (url: string) => {
     return await fetch(url).then(res => res.text())
@@ -25,13 +24,13 @@ const processCIPContentAsync = async (cipName: string, content: string) => {
     const cipResources = content.match(cipRegex)
     if (cipResources) {
         await Promise.all(cipResources.map(async r => {
-            if (r.indexOf('http://') < 0 && r.indexOf('https://') < 0) {
+            if (r.indexOf("http://") < 0 && r.indexOf("https://") < 0) {
                 // create filenames to download into static folder
                 const fileName = r
-                    .replace('](', ')
-                    .replace('.png)', '.png')
-                    .replace('.jpg)', '.jpg')
-                    .replace('.jpeg)', '.jpeg')
+                    .replace("](", "")
+                    .replace(".png)", ".png")
+                    .replace(".jpg)", ".jpg")
+                    .replace(".jpeg)", ".jpeg")
 
 
                 const buffer = await getBufferContentAsync(`${repoRawBaseUrl}${cipName}/${fileName}`)
@@ -58,13 +57,13 @@ const processCIPContentAsync = async (cipName: string, content: string) => {
 const stringManipulation = (content: string, cipName: string) => {
 
     // We expect markdown files, therefore strip HTML
-    content = content.replace(/(<([^>]+)>)/ig, ')
+    content = content.replace(/(<([^>]+)>)/ig, "")
 
     // Rewrite relative links like [Byron](./Byron.md) to absolute links. 
-    content = content.replace(/\]\(\.\//gm, '](' + repoRawBaseUrl + cipName + '/')
+    content = content.replace(/\]\(\.\//gm, "](" + repoRawBaseUrl + cipName + "/")
 
-    // Remove invalid 'CIP-YET-TO-COME' links that are empty 
-    content = content.replace(/]\(\)/g, ']')
+    // Remove invalid "CIP-YET-TO-COME" links that are empty 
+    content = content.replace(/]\(\)/g, "]")
 
     // Remove unterminated string constant like in CIP 30
     content = content.replace(/\\/g, '')
@@ -96,9 +95,9 @@ const stringManipulation = (content: string, cipName: string) => {
     content =  content.replace(/]\(\..\/README.md/gm, '](' + repoBaseUrl) 
 
     // Fixing parent folder links to other files (Needs to be changed, for now takes care only of CIP-17)
-    content = content.replace('](CIP-0017.json)', '](' + repoBaseUrl + '/CIP-0017/CIP-0017.json)')
+    content = content.replace("](CIP-0017.json)", "](" + repoBaseUrl + "/CIP-0017/CIP-0017.json)")
    
-    // Stripping `\` symbol from headlines (Needs REGEX)
+    // Stripping `\` symbol from headlines (NEEDS REGEX)
     content =  content.includes('####' && '###' && '##' && '#') ? content.replace(/\\/g, '') : content
 
     // Enforcing H2 headlines (Docusaurus doesn't like that)
@@ -109,7 +108,7 @@ const stringManipulation = (content: string, cipName: string) => {
 }
 
 const main = async () => {
-    console.log('CIP Content Downloading...')
+    console.log("CIP Content Downloading...")
     // Use https://raw.githubusercontent.com/cardano-foundation/CIPs/master/README.md as entry point to get URLs
     const readmeContent = await getStringContentAsync(`${repoRawBaseUrl}${readmeUrl}`)
     const cipUrls = readmeContent.match(readmeRegex)
@@ -121,10 +120,10 @@ const main = async () => {
 
     await Promise.all(cipUrlsUnique.map(async (cipUrl) => {
 
-        const fileName: string = 'README.md'
+        const fileName: string = "README.md"
         const cipName: string = cipUrl.substring(2, cipUrl.length - 1) // ./CIP-xxx/ --> CIP-xxx
 
-        let content = await getStringContentAsync(cipUrl.replace('./', repoRawBaseUrl) + fileName)
+        let content = await getStringContentAsync(cipUrl.replace("./", repoRawBaseUrl) + fileName)
         content = await processCIPContentAsync(cipName, content)
 
         // fs.mkdirSync(`${cipDocsPath}/${cipName}`, { recursive: true })
@@ -133,7 +132,7 @@ const main = async () => {
         console.log(`Downloaded to ${cipDocsPath}/${cipName}/${fileName}`)
     }))
 
-    console.log('CIP Content Downloaded')
+    console.log("CIP Content Downloaded")
 }
 
 main()
