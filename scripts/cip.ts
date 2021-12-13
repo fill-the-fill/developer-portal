@@ -1,6 +1,7 @@
 import fetch from 'node-fetch'
 import * as fs from 'fs'
 
+// Useful constants 
 const repoRawBaseUrl: string = 'https://raw.githubusercontent.com/cardano-foundation/CIPs/master/'
 const repoBaseUrl = 'https://github.com/cardano-foundation/CIPs/tree/master'
 const readmeUrl: string = '/README.md'
@@ -9,34 +10,37 @@ const cipRegex = /\]\(.*?.png\)|\]\(.*?.jpg\)|\]\(.*?.jpeg\)/gm
 const cipDocsPath = './docs/governance/cardano-improvement-proposals'
 const cipStaticResourcePath = '/static/img/cip/'
 
+//Fetching CIP text files
 const getStringContentAsync = async (url: string) => {
     return await fetch(url).then(res => res.text())
 }
 
+//Fetching CIP images
 const getBufferContentAsync = async (url: string) => {
     return await fetch(url).then(res => res.arrayBuffer())
 }
 
-// Download markdown resources
+// Downloading markdown resources
 const processCIPContentAsync = async (cipName: string, content: string) => {
-
+    
+    //Matching CIP folder names
     const cipResources = content.match(cipRegex)
     if (cipResources) {
         await Promise.all(cipResources.map(async r => {
             if (r.indexOf('http://') < 0 && r.indexOf('https://') < 0) {
-                // create filenames to download into static folder
+                // Creating filenames to download into static folder
                 const fileName = r
                     .replace('](', '')
                     .replace('.png)', '.png')
                     .replace('.jpg)', '.jpg')
                     .replace('.jpeg)', '.jpeg')
 
-
                 const buffer = await getBufferContentAsync(`${repoRawBaseUrl}${cipName}/${fileName}`)
 
-                // fs.rmdirSync(`${cipStaticResourcePath}${cipName}`, { recursive: true })
+                // Creating local static folders
                 fs.mkdirSync(`.${cipStaticResourcePath}${cipName}`, { recursive: true })
 
+                // Creating filenames
                 fs.writeFileSync(`.${cipStaticResourcePath}${cipName}/${fileName}`, new Uint8Array(buffer))
 
                 // Rewrite link to static folder
@@ -110,23 +114,21 @@ const main = async () => {
     console.log('CIP Content Downloading...')
     // Use https://raw.githubusercontent.com/cardano-foundation/CIPs/master/README.md as entry point to get URLs
     const readmeContent = await getStringContentAsync(`${repoRawBaseUrl}${readmeUrl}`)
+    // Finding CIP folder names in main README.md
     const cipUrls = readmeContent.match(readmeRegex)
     const cipUrlsUnique = [...new Set(cipUrls)]
 
     fs.rmdirSync(cipDocsPath, { recursive: true })
     fs.mkdirSync(cipDocsPath, { recursive: true })
+    
     // Save CIP Readme into docs
-
     await Promise.all(cipUrlsUnique.map(async (cipUrl) => {
-
         const fileName: string = 'README.md'
         const cipName: string = cipUrl.substring(2, cipUrl.length - 1) // ./CIP-xxx/ --> CIP-xxx
 
         let content = await getStringContentAsync(cipUrl.replace('./', repoRawBaseUrl) + fileName)
         content = await processCIPContentAsync(cipName, content)
-
-        // fs.mkdirSync(`${cipDocsPath}/${cipName}`, { recursive: true })
-
+    
         fs.writeFileSync(`${cipDocsPath}/${cipName}.md`, content)
         console.log(`Downloaded to ${cipDocsPath}/${cipName}/${fileName}`)
     }))
