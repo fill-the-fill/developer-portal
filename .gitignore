@@ -41,3 +41,11 @@ yarn-error.log*
 # Auto generated content like CIPs
 /docs/cardano-improvement-proposals/*
 /static/cip/*
+
+# CIPs
+cardano-improvement-proposals/*
+!cardano-improvement-proposals/.gitkeep
+
+# CIP images
+cip/*
+!cip/.gitkeep
