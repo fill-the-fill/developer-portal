@@ -15,7 +15,7 @@ const getStringContentAsync = async (url: string) => {
 const stringManipulation = (content: string, fileName: string) => {
 
     // Replace empty links
-    content = content.replace(']()', ']');
+    content = content.replace( /\]\(\)/gm, ']');
     
     // Inject rust library additional info
     content = injectRLInformation(content, fileName);
