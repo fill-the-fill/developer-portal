@@ -51,7 +51,7 @@ const injectDocusaurusDocTags = (content: string, url: string) => {
     content = content.substring(0, 3) === '---' ? content.slice(3) : content;
 
     // Add '---' with doc tags for Docusaurus
-    content = '--- \nsidebar_label: ' + url +'\ntitle: '+url + '\n--- ' +'\n'+content;
+    content = '\n## '+url + '\n' + content;
 
     return content;
 }
@@ -70,6 +70,7 @@ const main = async () => {
   fs.rmdirSync(tokenRegistryDocsPath, { recursive: true });
   fs.mkdirSync(tokenRegistryDocsPath, { recursive: true });
 
+  fs.writeFileSync(`${tokenRegistryDocsPath}/test.md`, '');
   // Save Token Registry markdowns into docs folder
   await Promise.all(tokeRegistryUniqueUrls.map(async (content) => {
       
@@ -86,7 +87,9 @@ const main = async () => {
       const manipulatedContent = injectDocusaurusDocTags(result, content);
 
       // Create markdown files locally with downloaded content
-      fs.writeFileSync(`${tokenRegistryDocsPath}/${markdownFileName}.md`, manipulatedContent);
+    //   fs.writeFileSync(`${tokenRegistryDocsPath}/${markdownFileName}.md`, manipulatedContent);
+      
+      fs.appendFileSync(`${tokenRegistryDocsPath}/test.md`, manipulatedContent);
       console.log(`Downloaded to ${tokenRegistryDocsPath}/${markdownFileName}.md`);
 
    }));
