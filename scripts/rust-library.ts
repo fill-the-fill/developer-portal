@@ -79,6 +79,7 @@ const main = async () => {
       // Finish manipulation with injecting docosautus doc tags
       const contentWithDocosaurusDocTags = injectDocusaurusDocTags(manipualtedContent, fileName);
 
+      // Finish filename manipulation to ensure compatibility
       const manipulatedFileName = fileNameManipulation(fileName)
 
       // Create markdown files locally with downloaded content
