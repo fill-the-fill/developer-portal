@@ -6,6 +6,8 @@ const tokenRegistryUrl: string = 'https://github.com/cardano-foundation/cardano-
 const tokenRegistryOverviewUrl: string = 'https://raw.githubusercontent.com/cardano-foundation/cardano-token-registry/master/README.md';
 const tokenRegistryWiki: string = 'https://github.com/cardano-foundation/cardano-token-registry/wiki';
 const repoRawWikiHomeUrl: string = 'https://raw.githubusercontent.com/wiki/cardano-foundation/cardano-token-registry/';
+const currentDate = new Date();
+const buildTimer: string = "./docs/build-timer/build-timer.md";
 
 const getStringContentAsync = async (url: string) => {
     return await fetch(url).then(res => res.text());
@@ -133,7 +135,7 @@ const injectTRnformation = (content: string, fileName: string) => {
     return content + '  \n## Token Registry Information  \nThis page was generated automatically from: ['+tokenRegistryWiki+']('+tokenRegistryWiki + '/' + fileName + ').';
 }
 
-const main = async () => {
+const trDownload = async () => {
     console.log('Token Registry Content Downloading...');
 
     // Fetch raw wiki content for token registry
@@ -178,6 +180,43 @@ const main = async () => {
     }));
 
     console.log('Token Registry Content Downloaded');
+    console.log("-----------------------------------------------------");
+}
+
+const main = async () => {
+
+    console.log("Checking previous Token Registry build date...");
+
+    // Check content of previously recorded date
+    // This is being done in order to make sure the script to fetch Token Registry content runs only once a day
+    fs.readFile(buildTimer, "utf8", (err, data) => {
+
+        // Find previously recorded date 
+        const findTime = data.match(/(?<=TOKEN\:)(.*?)(?=\s)/g);
+        const previousTime = findTime && new Date(findTime.toString()).getDate();
+
+        // Check if present and previously recorded date is equal
+        if(currentDate.getDate() !== previousTime) {
+
+            // Create new content for the file
+            const newContent: any = previousTime && data.replace(findTime[0], currentDate.toISOString());
+
+            // Replace previous file with new content 
+            fs.writeFileSync(buildTimer, newContent);
+
+            console.log("Token Registry Build date has been updated...");
+
+            // Run Token Registry script 
+            trDownload();
+
+        } else {
+
+            // Inform user that script has been already initiated in todays build
+            console.log("Token Reigstry script has been already initiated today.");
+            console.log("-----------------------------------------------------");
+        }
+    });
+
 }
 
 main();
