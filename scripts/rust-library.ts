@@ -6,6 +6,8 @@ const repoBaseUrl: string = 'https://github.com/Emurgo/cardano-serialization-lib
 const rlStaticResourcePath: string = '/tree/master/doc/getting-started'
 const rustLibraryDocsPath: string = './docs/get-started/cardano-serialization-lib';
 const namesRawBaseIndexUrl: string = 'https://raw.githubusercontent.com/Emurgo/cardano-serialization-lib/master/doc/index.rst';
+const currentDate = new Date();
+const buildTimer: string = "./docs/build-timer/build-timer.md";
 
 const getStringContentAsync = async (url: string) => {
     return await fetch(url).then(res => res.text());
@@ -68,7 +70,7 @@ const injectRLInformation = (content: string, fileName: string) => {
     return content + '  \n## Serialization-Lib Information  \nThis page was generated automatically from: ['+repoBaseUrl+']('+repoBaseUrl + rlStaticResourcePath + '/' + fileName + '.md' + ').';
 }
 
-const main = async () => {
+const rlDownload = async () => {
   console.log('Rust Library Content Downloading...')
 
   // Fetch markdown file names 
@@ -99,6 +101,43 @@ const main = async () => {
    }));
 
    console.log('Rust Library Content Downloaded') 
+   console.log("-----------------------------------------------------");
+}
+
+const main = async () => {
+
+    console.log("Checking previous Rust Library build date...");
+
+    // Check content of previously recorded date
+    // This is being done in order to make sure the script to fetch rust library content runs only once a day
+    fs.readFile(buildTimer, "utf8", (err, data) => {
+
+        // Find previously recorded date 
+        const findTime = data.match(/(?<=RUST\:)(.*?)(?=\sTOKEN)/g);
+        const previousTime = findTime && new Date(findTime.toString()).getDate();
+
+        // Check if present and previously recorded date is equal
+        if(currentDate.getDate() !== previousTime) {
+
+            // Create new content for the file
+            const newContent: any = previousTime && data.replace(findTime[0], currentDate.toISOString());
+
+            // Replace previous file with new content 
+            fs.writeFileSync(buildTimer, newContent);
+
+            console.log("Rust Library Build date has been updated...");
+
+            // Run rust library script 
+            rlDownload();
+
+        } else {
+
+            // Inform user that script has been already initiated in todays build
+            console.log("Rust Library script has been already initiated today.");
+            console.log("-----------------------------------------------------");
+        }
+    });
+
 }
 
 main();
