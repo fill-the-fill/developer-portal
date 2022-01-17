@@ -6,9 +6,11 @@ const repoRawBaseUrl: string = 'https://raw.githubusercontent.com/cardano-founda
 const readmeUrl: string = '/README.md';
 const readmeRegex = /\.\/CIP.*?\//gm;
 const cipRegex = /\]\(.*?.png\)|\]\(.*?.jpg\)|\]\(.*?.jpeg\)|\]\(.*?.json\)/gm;
-const cipDocsPath = "./docs/governance/cardano-improvement-proposals";
-const cipStaticResourcePath = "/static/img/cip/";
-const sourceRepo = "cardano-foundation/CIPs";
+const cipDocsPath: string = "./docs/governance/cardano-improvement-proposals";
+const buildTimer: string = "./docs/build-timer/build-timer.md";
+const cipStaticResourcePath: string = "/static/img/cip/";
+const sourceRepo: string = "cardano-foundatios/CIPs";
+const currentDate = new Date();
 
 const getStringContentAsync = async (url: string) => {
     return await fetch(url).then(res => res.text());
@@ -135,8 +137,10 @@ const getDocTag = (content: string, tagName: string) => {
     return content.match(new RegExp(`(?<=${tagName}: ).*`, ''));
 }
 
-const main = async () => {
+const cipDownload = async () => {
+
     console.log("CIP Content Downloading...");
+
     // Use https://raw.githubusercontent.com/cardano-foundation/CIPs/master/README.md as entry point to get URLs
     const readmeContent = await getStringContentAsync(`${repoRawBaseUrl}${readmeUrl}`);
     const cipUrls = readmeContent.match(readmeRegex);
@@ -159,6 +163,43 @@ const main = async () => {
     }));
 
     console.log("CIP Content Downloaded");
+    console.log("-----------------------------------------------------");
+}
+
+const main = async () => {
+
+    console.log("Checking previous CIP build date...");
+
+    // Check content of previously recorded date
+    // This is being done in order to make sure the script to fetch CIPs runs only once a day
+    fs.readFile(buildTimer, "utf8", (err, data) => {
+
+        // Find previously recorded date 
+        const findTime = data.match(/(?<=CIP\:)(.*?)(?=\sRUST)/g);
+        const previousTime = findTime && new Date(findTime.toString()).getDate();
+
+        // Check if present and previously recorded date is equal
+        if(currentDate.getDate() !== previousTime) {
+
+            // Create new content for the file
+            const newContent: any = previousTime && data.replace(findTime[0], currentDate.toISOString());
+
+            // Replace previous file with new content 
+            fs.writeFileSync(buildTimer, newContent);
+
+            console.log("CIP Build date has been updated...");
+
+            // Run CIP script 
+            cipDownload();
+
+        } else {
+
+            // Inform user that script has been already initiated in todays build
+            console.log("CIP script has been already initiated today.");
+            console.log("-----------------------------------------------------");
+        }
+    });
+
 }
 
 main();
