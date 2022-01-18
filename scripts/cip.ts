@@ -6,11 +6,13 @@ const repoRawBaseUrl: string = 'https://raw.githubusercontent.com/cardano-founda
 const readmeUrl: string = '/README.md';
 const readmeRegex = /\.\/CIP.*?\//gm;
 const cipRegex = /\]\(.*?.png\)|\]\(.*?.jpg\)|\]\(.*?.jpeg\)|\]\(.*?.json\)/gm;
+const scriptDateRegex = /(?<=CIP\:)(.*?)(?=\sRUST)/g;
 const cipDocsPath: string = "./docs/governance/cardano-improvement-proposals";
-const buildTimer: string = "./scripts/script.lock";
+const scriptLockPath: string = "./scripts/script.lock";
 const cipStaticResourcePath: string = "/static/img/cip/";
 const sourceRepo: string = "cardano-foundatios/CIPs";
-const currentDate = new Date();
+const currentDate = new Date()
+const newTime = "CIP:" + currentDate.toISOString() + "\n" + "RUST:" + currentDate.toISOString() + "\n" + "TOKEN:" + currentDate.toISOString() + "\n"
 
 const getStringContentAsync = async (url: string) => {
     return await fetch(url).then(res => res.text());
@@ -166,39 +168,55 @@ const cipDownload = async () => {
     console.log("-----------------------------------------------------");
 }
 
+// Check content of previously recorded date
+// This is being done in order to make sure the script to fetch CIPs runs only once a day
+const compareDate = () => {
+    fs.readFile(scriptLockPath, "utf8", (err, data) => {
+
+        // Find previously recorded date 
+        const findTime = data.match(scriptDateRegex);
+        const previousTime = findTime && new Date(findTime.toString()).getDate();
+            
+            // Check if present and previously recorded date is equal or there is no date at all
+            if(currentDate && currentDate.getDate() !== previousTime || findTime && findTime[0].length === 0) {
+
+                // Create new content for the file
+                const newContent: any = data.replace(scriptDateRegex, currentDate.toISOString());
+
+                // Replace previous file with new content 
+                fs.writeFileSync(scriptLockPath, newContent);
+
+                console.log("CIP Build date has been updated...");
+
+                // Run CIP script 
+                cipDownload();
+
+            } else {
+
+                // Inform user that script has been already initiated in todays build
+                console.log("CIP script has been already initiated today.");
+                console.log("-----------------------------------------------------");
+            }
+    });
+}
+
 const main = async () => {
 
     console.log("Checking previous CIP build date...");
 
-    // Check content of previously recorded date
-    // This is being done in order to make sure the script to fetch CIPs runs only once a day
-    fs.readFile(buildTimer, "utf8", (err, data) => {
-
-        // Find previously recorded date 
-        const findTime = data.match(/(?<=CIP\:)(.*?)(?=\sRUST)/g);
-        const previousTime = findTime && new Date(findTime.toString()).getDate();
-
-        // Check if present and previously recorded date is equal
-        if(currentDate.getDate() !== previousTime) {
-
-            // Create new content for the file
-            const newContent: any = previousTime && data.replace(findTime[0], currentDate.toISOString());
-
-            // Replace previous file with new content 
-            fs.writeFileSync(buildTimer, newContent);
-
-            console.log("CIP Build date has been updated...");
-
-            // Run CIP script 
-            cipDownload();
+    // Check if script.lock already exists
+        if(fs.existsSync(scriptLockPath)) {
+            
+            //Compare dates with previous build
+            compareDate()
 
         } else {
+            
+            // Create new script.lock file with new dates
+            fs.writeFileSync(scriptLockPath, newTime);
+            console.log("Script.lock has been added into scripts folder.")
 
-            // Inform user that script has been already initiated in todays build
-            console.log("CIP script has been already initiated today.");
-            console.log("-----------------------------------------------------");
         }
-    });
 
 }
 
