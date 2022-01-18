@@ -8,7 +8,7 @@ const rustLibraryDocsPath: string = './docs/get-started/cardano-serialization-li
 const namesRawBaseIndexUrl: string = 'https://raw.githubusercontent.com/Emurgo/cardano-serialization-lib/master/doc/index.rst';
 const currentDate = new Date();
 const scriptLockPath: string = "./scripts/script.lock";
-const scriptDateRegex = /(?<=RUST\:)(.*?)(?=\sTOKEN)/g;
+const scriptDateRegex = /(?<=RUST\:)(.*?)(?=\s)/g;
 
 
 const getStringContentAsync = async (url: string) => {
@@ -114,15 +114,25 @@ const compareDate = () => {
         // Find previously recorded date 
         const findTime = data.match(scriptDateRegex);
         const previousTime = findTime && new Date(findTime.toString()).getDate();
-            
             // Check if present and previously recorded date is equal or there is no date at all
-            if(currentDate && currentDate.getDate() !== previousTime || findTime && findTime[0].length === 0) {
+            if(currentDate && currentDate.getDate() !== previousTime) {
+                // If script.lock has CIP in it replace its date
+                if(data.match(/RUST/g)) {
 
-                // Create new content for the file
-                const newContent: any = data.replace(scriptDateRegex, currentDate.toISOString());
+                    // Create new content for the file
+                    const newContent: any = data.replace(scriptDateRegex, currentDate.toISOString());
 
-                // Replace previous file with new content 
-                fs.writeFileSync(scriptLockPath, newContent);
+                    // Replace previous file with new content 
+                    fs.writeFileSync(scriptLockPath, newContent);
+
+                } else {
+
+                    // Create new content for the file with CIP included
+                    const newContent: any = data.concat("\nRUST:" + currentDate.toISOString() + "\n ");
+                    
+                    // Replace previous file with new content 
+                    fs.writeFileSync(scriptLockPath, newContent);
+                }
 
                 console.log("Rust Library Build date has been updated...");
 
