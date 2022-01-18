@@ -169,7 +169,7 @@ const cipDownload = async () => {
 }
 
 // Check content of previously recorded date
-// This is being done in order to make sure the script to fetch CIPs runs only once a day
+// This is being done in order for script to fetch CIP only once per day
 const compareDate = () => {
     fs.readFile(scriptLockPath, "utf8", (err, data) => {
 
@@ -207,7 +207,7 @@ const main = async () => {
     // Check if script.lock already exists
         if(fs.existsSync(scriptLockPath)) {
             
-            //Compare dates with previous build
+            //Compare dates with previous build and fetch data if needed
             compareDate()
 
         } else {
