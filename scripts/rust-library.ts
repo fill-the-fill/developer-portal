@@ -7,7 +7,9 @@ const rlStaticResourcePath: string = '/tree/master/doc/getting-started'
 const rustLibraryDocsPath: string = './docs/get-started/cardano-serialization-lib';
 const namesRawBaseIndexUrl: string = 'https://raw.githubusercontent.com/Emurgo/cardano-serialization-lib/master/doc/index.rst';
 const currentDate = new Date();
-const buildTimer: string = "./scripts/script.lock";
+const scriptLockPath: string = "./scripts/script.lock";
+const scriptDateRegex = /(?<=RUST\:)(.*?)(?=\sTOKEN)/g;
+
 
 const getStringContentAsync = async (url: string) => {
     return await fetch(url).then(res => res.text());
@@ -104,39 +106,43 @@ const rlDownload = async () => {
    console.log("-----------------------------------------------------");
 }
 
+// Check content of previously recorded date
+// This is being done in order for script to fetch rust library content only once per day
+const compareDate = () => {
+    fs.readFile(scriptLockPath, "utf8", (err, data) => {
+
+        // Find previously recorded date 
+        const findTime = data.match(scriptDateRegex);
+        const previousTime = findTime && new Date(findTime.toString()).getDate();
+            
+            // Check if present and previously recorded date is equal or there is no date at all
+            if(currentDate && currentDate.getDate() !== previousTime || findTime && findTime[0].length === 0) {
+
+                // Create new content for the file
+                const newContent: any = data.replace(scriptDateRegex, currentDate.toISOString());
+
+                // Replace previous file with new content 
+                fs.writeFileSync(scriptLockPath, newContent);
+
+                console.log("Rust Library Build date has been updated...");
+
+                // Run rust library script 
+                rlDownload();
+
+            } else {
+
+                // Inform user that script has been already initiated in todays build
+                console.log("Rust Library script has been already initiated today.");
+                console.log("-----------------------------------------------------");
+            }
+    });
+}
+
 const main = async () => {
 
     console.log("Checking previous Rust Library build date...");
 
-    // Check content of previously recorded date
-    // This is being done in order to make sure the script to fetch rust library content runs only once a day
-    fs.readFile(buildTimer, "utf8", (err, data) => {
-
-        // Find previously recorded date 
-        const findTime = data.match(/(?<=RUST\:)(.*?)(?=\sTOKEN)/g);
-        const previousTime = findTime && new Date(findTime.toString()).getDate();
-
-        // Check if present and previously recorded date is equal
-        if(currentDate.getDate() !== previousTime) {
-
-            // Create new content for the file
-            const newContent: any = previousTime && data.replace(findTime[0], currentDate.toISOString());
-
-            // Replace previous file with new content 
-            fs.writeFileSync(buildTimer, newContent);
-
-            console.log("Rust Library Build date has been updated...");
-
-            // Run rust library script 
-            rlDownload();
-
-        } else {
-
-            // Inform user that script has been already initiated in todays build
-            console.log("Rust Library script has been already initiated today.");
-            console.log("-----------------------------------------------------");
-        }
-    });
+    compareDate()
 
 }
 
