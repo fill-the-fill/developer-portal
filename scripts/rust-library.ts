@@ -1,15 +1,14 @@
 import fetch from 'node-fetch';
 import * as fs from 'fs';
 
-const repoRawBaseUrl: string = 'https://raw.githubusercontent.com/Emurgo/cardano-serialization-lib/master/doc/getting-started/';
-const repoBaseUrl: string = 'https://github.com/Emurgo/cardano-serialization-lib'
+const currentDate = new Date();
+const scriptDateRegex = /(?<=RUST\:)(.*?)(?=\s)/g;
+const scriptLockPath: string = "./scripts/script.lock";
 const rlStaticResourcePath: string = '/tree/master/doc/getting-started'
+const repoBaseUrl: string = 'https://github.com/Emurgo/cardano-serialization-lib'
 const rustLibraryDocsPath: string = './docs/get-started/cardano-serialization-lib';
 const namesRawBaseIndexUrl: string = 'https://raw.githubusercontent.com/Emurgo/cardano-serialization-lib/master/doc/index.rst';
-const currentDate = new Date();
-const scriptLockPath: string = "./scripts/script.lock";
-const scriptDateRegex = /(?<=RUST\:)(.*?)(?=\s)/g;
-
+const repoRawBaseUrl: string = 'https://raw.githubusercontent.com/Emurgo/cardano-serialization-lib/master/doc/getting-started/';
 
 const getStringContentAsync = async (url: string) => {
     return await fetch(url).then(res => res.text());
