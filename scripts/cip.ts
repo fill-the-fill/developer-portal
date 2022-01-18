@@ -1,18 +1,18 @@
 import fetch from 'node-fetch';
 import * as fs from 'fs';
 
-const repoBaseUrl: string = 'https://github.com/cardano-foundation/CIPs/tree/master/';
-const repoRawBaseUrl: string = 'https://raw.githubusercontent.com/cardano-foundation/CIPs/master/';
-const readmeUrl: string = '/README.md';
+const currentDate = new Date()
 const readmeRegex = /\.\/CIP.*?\//gm;
-const cipRegex = /\]\(.*?.png\)|\]\(.*?.jpg\)|\]\(.*?.jpeg\)|\]\(.*?.json\)/gm;
+const readmeUrl: string = '/README.md';
+const sourceRepo: string = "cardano-foundatios/CIPs";
 const scriptDateRegex = /(?<=CIP\:)(.*?)(?=\sRUST)/g;
-const cipDocsPath: string = "./docs/governance/cardano-improvement-proposals";
 const scriptLockPath: string = "./scripts/script.lock";
 const cipStaticResourcePath: string = "/static/img/cip/";
-const sourceRepo: string = "cardano-foundatios/CIPs";
-const currentDate = new Date()
-const newTime = "CIP:" + currentDate.toISOString() + "\n" + "RUST:" + currentDate.toISOString() + "\n" + "TOKEN:" + currentDate.toISOString() + "\n"
+const cipDocsPath: string = "./docs/governance/cardano-improvement-proposals";
+const cipRegex = /\]\(.*?.png\)|\]\(.*?.jpg\)|\]\(.*?.jpeg\)|\]\(.*?.json\)/gm;
+const repoBaseUrl: string = 'https://github.com/cardano-foundation/CIPs/tree/master/';
+const repoRawBaseUrl: string = 'https://raw.githubusercontent.com/cardano-foundation/CIPs/master/';
+const newTimeTemplate = "CIP:" + currentDate.toISOString() + "\n" + "RUST:" + currentDate.toISOString() + "\n" + "TOKEN:" + currentDate.toISOString() + "\n"
 
 const getStringContentAsync = async (url: string) => {
     return await fetch(url).then(res => res.text());
@@ -213,7 +213,7 @@ const main = async () => {
         } else {
             
             // Create new script.lock file with new dates
-            fs.writeFileSync(scriptLockPath, newTime);
+            fs.writeFileSync(scriptLockPath, newTimeTemplate);
             console.log("Script.lock has been added into scripts folder.")
 
         }
