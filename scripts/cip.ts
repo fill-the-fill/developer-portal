@@ -214,6 +214,10 @@ const main = async () => {
             
             // Create new script.lock file with new dates
             fs.writeFileSync(scriptLockPath, newTimeTemplate);
+
+            // Fetch CIPs
+            cipDownload()
+            
             console.log("Script.lock has been added into scripts folder.")
 
         }
