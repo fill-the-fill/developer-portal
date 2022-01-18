@@ -7,7 +7,7 @@ const rlStaticResourcePath: string = '/tree/master/doc/getting-started'
 const rustLibraryDocsPath: string = './docs/get-started/cardano-serialization-lib';
 const namesRawBaseIndexUrl: string = 'https://raw.githubusercontent.com/Emurgo/cardano-serialization-lib/master/doc/index.rst';
 const currentDate = new Date();
-const buildTimer: string = "./docs/build-timer/build-timer.md";
+const buildTimer: string = "./scripts/script.lock";
 
 const getStringContentAsync = async (url: string) => {
     return await fetch(url).then(res => res.text());

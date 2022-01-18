@@ -7,7 +7,7 @@ const tokenRegistryOverviewUrl: string = 'https://raw.githubusercontent.com/card
 const tokenRegistryWiki: string = 'https://github.com/cardano-foundation/cardano-token-registry/wiki';
 const repoRawWikiHomeUrl: string = 'https://raw.githubusercontent.com/wiki/cardano-foundation/cardano-token-registry/';
 const currentDate = new Date();
-const buildTimer: string = "./docs/build-timer/build-timer.md";
+const buildTimer: string = "./scripts/script.lock";
 
 const getStringContentAsync = async (url: string) => {
     return await fetch(url).then(res => res.text());
