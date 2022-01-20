@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 import * as fs from 'fs';
 
 const currentDate = new Date();
-const scriptDateRegex = /(?<=RUST\:)(.*?)(?=\s)/g;
+const scriptDateRegex = /(?<=RUST-LIBRARY\:)(.*?)(?=\s)/g;
 const scriptLockPath: string = "./scripts/script.lock";
 const rlStaticResourcePath: string = '/tree/master/doc/getting-started'
 const repoBaseUrl: string = 'https://github.com/Emurgo/cardano-serialization-lib'
@@ -117,7 +117,7 @@ const compareDate = () => {
             // Check if present and previously recorded date is equal or there is no date at all
             if(currentDate && currentDate.getDate() !== previousTime) {
                 // If script.lock has rust library in it - replace its date
-                if(data.match(/RUST/g)) {
+                if(data.match(/RUST-LIBRARY/g)) {
 
                     // Create new content for the file
                     const newContent: any = data.replace(scriptDateRegex, currentDate.toISOString());
@@ -128,7 +128,7 @@ const compareDate = () => {
                 } else {
 
                     // Create new content for the file with rust library included
-                    const newContent: any = data.concat("\nRUST:" + currentDate.toISOString() + "\n ");
+                    const newContent: any = data.concat("\n" + "RUST-LIBRARY:" + currentDate.toISOString() + "\n");
                     
                     // Replace previous file with new content 
                     fs.writeFileSync(scriptLockPath, newContent);

@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 import * as fs from 'fs';
 
 const currentDate = new Date();
-const scriptDateRegex = /(?<=TOKEN\:)(.*?)(?=\s)/g;
+const scriptDateRegex = /(?<=TOKEN-REGISTRY\:)(.*?)(?=\s)/g;
 const scriptLockPath: string = "./scripts/script.lock";
 const tokenRegistryDocsPath: string = './docs/native-tokens/token-registry';
 const tokenRegistryWiki: string = 'https://github.com/cardano-foundation/cardano-token-registry/wiki';
@@ -196,7 +196,7 @@ const compareDate = () => {
             if(currentDate && currentDate.getDate() !== previousTime) {
 
                 // If script.lock has Token registry in it - replace its date
-                if(data.match(/TOKEN/g)) {
+                if(data.match(/TOKEN-REGISTRY/g)) {
 
                     // Create new content for the file
                     const newContent: any = data.replace(scriptDateRegex, currentDate.toISOString());
@@ -207,7 +207,7 @@ const compareDate = () => {
                 } else {
 
                     // Create new content for the file with Token registry included
-                    const newContent: any = data.concat("\TOKEN:" + currentDate.toISOString() + "\n ");
+                    const newContent: any = data.concat("\n" + "TOKEN-REGISTRY:" + currentDate.toISOString() + "\n");
                     
                     // Replace previous file with new content 
                     fs.writeFileSync(scriptLockPath, newContent);
