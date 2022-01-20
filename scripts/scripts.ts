@@ -2,11 +2,12 @@ import cipMain from "./cip";
 import rustMain from "./rust-library";
 import tokenRegistryMain from "./token-registry";
 
-// Initiate every script every few seconds
+// Initiate all the scripts in one file
 const start = (callback: any) => {
 
   console.log("Running scripts");
   
+  // Callback for scripts to run after eachother after 2 seconds
   setTimeout(() => {
     callback(cipMain);
     setTimeout(() => {
@@ -19,4 +20,5 @@ const start = (callback: any) => {
   
 };
 
+// Run scripts
 start((script: any) => script());

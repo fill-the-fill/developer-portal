@@ -1,26 +1,15 @@
-import fetch from 'node-fetch';
 import * as fs from 'fs';
+import { compareDateTest, getStringContentAsync, getBufferContentAsync, scriptLockPath, newTimeTemplate } from './utils';
 
-const currentDate = new Date();
 const readmeRegex = /\.\/CIP.*?\//gm;
 const readmeUrl: string = '/README.md';
 const sourceRepo: string = "cardano-foundatios/CIPs";
 const scriptDateRegex = /(?<=CIPS\:)(.*?)(?=\s)/g;
-const scriptLockPath: string = "./scripts/script.lock";
 const cipStaticResourcePath: string = "/static/img/cip/";
 const cipDocsPath: string = "./docs/governance/cardano-improvement-proposals";
 const cipRegex = /\]\(.*?.png\)|\]\(.*?.jpg\)|\]\(.*?.jpeg\)|\]\(.*?.json\)/gm;
 const repoBaseUrl: string = 'https://github.com/cardano-foundation/CIPs/tree/master/';
 const repoRawBaseUrl: string = 'https://raw.githubusercontent.com/cardano-foundation/CIPs/master/';
-const newTimeTemplate = "LAST BUILD TIME OF THE SCRIPTS" + "\n\n" + "CIPS:" + currentDate.toISOString() + "\n" + "RUST-LIBRARY:" + "\n" + "TOKEN-REGISTRY:" + "\n";
-
-const getStringContentAsync = async (url: string) => {
-    return await fetch(url).then(res => res.text());
-}
-
-const getBufferContentAsync = async(url: string) => { 
-    return await fetch(url).then(res => res.arrayBuffer());
-}
 
 // Download markdown resources
 const processCIPContentAsync = async (cipName: string, content: string) => {
@@ -168,50 +157,6 @@ const cipDownload = async () => {
     console.log("-----------------------------------------------------");
 }
 
-// Check content of previously recorded date
-// This is being done in order for script to fetch CIP only once per day
-const compareDate = async () => {
-    fs.readFile(scriptLockPath, "utf8", (err, data) => {
-
-        // Find previously recorded date 
-        const findTime = data.match(scriptDateRegex);
-        const previousTime = findTime && new Date(findTime.toString()).getDate();
-            
-            // Check if present and previously recorded date is equal or there is no date at all
-            if(currentDate && currentDate.getDate() !== previousTime) {
-                // If script.lock has CIP in it - replace its date
-                if(data.match(/CIPS/g)) {
-
-                    // Create new content for the file
-                    const newContent: any = data.replace(scriptDateRegex, currentDate.toISOString());
-
-                    // Replace previous file with new content 
-                    fs.writeFileSync(scriptLockPath, newContent);
-
-                } else {
-
-                    // Create new content for the file with CIP included
-                    const newContent: any = data.concat("\n" + "CIPS:" + currentDate.toISOString() + "\n");
-                    
-                    // Replace previous file with new content 
-                    fs.writeFileSync(scriptLockPath, newContent);
-                }
-
-
-                console.log("CIP Build date has been updated...");
-
-                // Run CIP script 
-                cipDownload();
-
-            } else {
-
-                // Inform user that script has been already initiated in today's build
-                console.log("CIP script has been already initiated today.");
-                console.log("-----------------------------------------------------");
-            }
-    });
-}
-
 const cipMain = async () => {
 
     console.log("Checking previous CIP build date...");
@@ -219,8 +164,9 @@ const cipMain = async () => {
     // Check if script.lock already exists
         if(fs.existsSync(scriptLockPath)) {
             
-            //Compare dates with previous build and fetch data if needed
-            await compareDate()
+            // Check content of previously recorded date
+            // This is being done in order for script to fetch CIP only once per day
+            await compareDateTest("CIPS", scriptDateRegex, cipDownload, /CIPS/g)
 
         } else {
             
