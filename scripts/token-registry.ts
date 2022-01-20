@@ -71,10 +71,10 @@ const markdownStringManipulation = (content: string) => {
 // String manipulations to ensure compatibility
 const stringManipulation = (content: string, fileName: string) => {
 
-    // Remove `(` and `)` from relative links (temporariy not in use, using hardcoded solution for now)
+    // Remove `(` and `)` from relative links (temporary not in use, using hardcoded solution for now)
     // content = content.replace(/(?<=\]\()(.*)(?=\))/g, (x) => x.replace(/[()]/g, ''));
     
-    // Remove `(` and `)` from relative links (temporariy solution focusing on specific link, in the future needs to be changed to work through all of the links)
+    // Remove `(` and `)` from relative links (temporary solution focusing on specific link, in the future needs to be changed to work through all the links)
     content = content.replace('How-to-prepare-an-entry-for-the-registry-(NA-policy-script)',
                                  'How-to-prepare-an-entry-for-the-registry-NA-policy-script');
     
@@ -98,7 +98,7 @@ const injectDocusaurusDocTags = (content: string, url: string) => {
     return content;
 }
 
-// Inject extra docusaurus doc tags and manipulate overview markdown file content
+// Inject extra Docusaurus doc tags and manipulate overview markdown file content
 const overviewStringManipulation = (content: string) => {
 
     // Extra content 
@@ -171,7 +171,7 @@ const trDownload = async () => {
         // Manipulate content to ensure compatibility
         const manipulatedContent = await stringManipulation(content, tokenRegistryUrl);
 
-        // Finish manipulation with injecting docosautus doc tags
+        // Finish manipulation with injecting Docusaurus doc tags
         const manipulatedContentWithDocTags = injectDocusaurusDocTags(manipulatedContent, trUrl);
 
         // Create markdown files locally with downloaded content
@@ -194,7 +194,8 @@ const compareDate = () => {
         const previousTime = findTime && new Date(findTime.toString()).getDate();
             // Check if present and previously recorded date is equal or there is no date at all
             if(currentDate && currentDate.getDate() !== previousTime) {
-                // If script.lock has CIP in it replace its date
+
+                // If script.lock has Token registry in it - replace its date
                 if(data.match(/TOKEN/g)) {
 
                     // Create new content for the file
@@ -205,7 +206,7 @@ const compareDate = () => {
 
                 } else {
 
-                    // Create new content for the file with CIP included
+                    // Create new content for the file with Token registry included
                     const newContent: any = data.concat("\TOKEN:" + currentDate.toISOString() + "\n ");
                     
                     // Replace previous file with new content 
@@ -219,7 +220,7 @@ const compareDate = () => {
 
             } else {
 
-                // Inform user that script has been already initiated in todays build
+                // Inform user that script has been already initiated in today's build
                 console.log("Token Registry script has been already initiated today.");
                 console.log("-----------------------------------------------------");
             }

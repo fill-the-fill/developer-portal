@@ -30,7 +30,7 @@ const processCIPContentAsync = async (cipName: string, content: string) => {
         await Promise.all(cipResources.map(async r => { 
             if(r.indexOf("http://") < 0 && r.indexOf("https://") < 0)
             {
-                // create filenames to download into static folder
+                // Create filenames to download into static folder
                 const fileName = r
                     .replace("](", "")
                     .replace(".png)",".png")
@@ -38,7 +38,7 @@ const processCIPContentAsync = async (cipName: string, content: string) => {
                     .replace(".jpeg)",".jpeg")
                     .replace(".json)",".json");
 
-                // create modified filenames in case we want to store files 
+                // Create modified filenames in case we want to store files 
                 // with a different ending, like JSON files
                 const modifiedFileName = r
                     .replace("](", "")
@@ -180,7 +180,7 @@ const compareDate = () => {
             // Check if present and previously recorded date is equal or there is no date at all
             if(currentDate && currentDate.getDate() !== previousTime) {
 
-                // If script.lock has CIP in it replace its date
+                // If script.lock has CIP in it - replace its date
                 if(data.match(/CIP/g)) {
 
                     // Create new content for the file
@@ -206,7 +206,7 @@ const compareDate = () => {
 
             } else {
 
-                // Inform user that script has been already initiated in todays build
+                // Inform user that script has been already initiated in today's build
                 console.log("CIP script has been already initiated today.");
                 console.log("-----------------------------------------------------");
             }

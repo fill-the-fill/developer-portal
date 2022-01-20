@@ -26,7 +26,7 @@ const stringManipulation = (content: string, fileName: string) => {
     return content;
 }
 
-// Inject extra docusarus doc tags
+// Inject extra Docusarus doc tags
 const injectDocusaurusDocTags = (content: string, fileName: string) => {
     
     // Replace '-' from url in order to create a clean sidebar label
@@ -90,7 +90,7 @@ const rlDownload = async () => {
       // Remove invalid links that are empty
       const manipualtedContent = stringManipulation(result, fileName)
       
-      // Finish manipulation with injecting docosautus doc tags
+      // Finish manipulation with injecting Docusaurus doc tags
       const contentWithDocosaurusDocTags = injectDocusaurusDocTags(manipualtedContent, fileName);
 
       const manipulatedFileName = fileNameManipulation(fileName)
@@ -113,9 +113,10 @@ const compareDate = () => {
         // Find previously recorded date 
         const findTime = data.match(scriptDateRegex);
         const previousTime = findTime && new Date(findTime.toString()).getDate();
+        
             // Check if present and previously recorded date is equal or there is no date at all
             if(currentDate && currentDate.getDate() !== previousTime) {
-                // If script.lock has CIP in it replace its date
+                // If script.lock has rust library in it - replace its date
                 if(data.match(/RUST/g)) {
 
                     // Create new content for the file
@@ -126,7 +127,7 @@ const compareDate = () => {
 
                 } else {
 
-                    // Create new content for the file with CIP included
+                    // Create new content for the file with rust library included
                     const newContent: any = data.concat("\nRUST:" + currentDate.toISOString() + "\n ");
                     
                     // Replace previous file with new content 
@@ -140,7 +141,7 @@ const compareDate = () => {
 
             } else {
 
-                // Inform user that script has been already initiated in todays build
+                // Inform user that script has been already initiated in today's build
                 console.log("Rust Library script has been already initiated today.");
                 console.log("-----------------------------------------------------");
             }
