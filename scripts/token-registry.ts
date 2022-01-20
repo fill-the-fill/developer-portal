@@ -227,7 +227,7 @@ const compareDate = () => {
     });
 }
 
-const main = async () => {
+const tokenRegistryMain = async () => {
 
     console.log("Checking previous Token Registry build date...");
 
@@ -235,4 +235,4 @@ const main = async () => {
 
 }
 
-main();
+export default tokenRegistryMain

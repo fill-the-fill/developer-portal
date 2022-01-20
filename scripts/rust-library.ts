@@ -148,7 +148,7 @@ const compareDate = () => {
     });
 }
 
-const main = async () => {
+const rustMain = async () => {
 
     console.log("Checking previous Rust Library build date...");
 
@@ -156,4 +156,4 @@ const main = async () => {
 
 }
 
-main();
+export default rustMain
