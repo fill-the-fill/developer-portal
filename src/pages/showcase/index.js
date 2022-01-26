@@ -1,7 +1,9 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 
 import Layout from "@theme/Layout";
-import ShowcaseCheckbox from "@site/src/components/showcase/ShowcaseCheckbox";
+import ShowcaseTooltip from "@site/src/components/showcase/ShowcaseTooltip";
+import ShowcaseCheckbox from "@site/src/components/showcase/ShowcaseCheckbox"
+import ShowcaseTagSelect from "@site/src/components/showcase/ShowcaseTagSelect"
 import ShowcaseCard from "@site/src/components/showcase/ShowcaseCard";
 import clsx from "clsx";
 
@@ -9,6 +11,7 @@ import PortalHero from "../portalhero";
 import { toggleListItem } from "../../utils/jsUtils";
 import { SortedShowcases, Tags, TagList } from "../../data/showcases";
 import { useHistory, useLocation } from "@docusaurus/router";
+import styles from "./styles.module.css";
 
 const TITLE = "Showcase";
 const DESCRIPTION = "See the awesome projects people are building with Cardano";
@@ -38,6 +41,17 @@ function useFilteredProjects(projects, selectedTags, operator) {
     operator,
   ]);
 }
+
+// export function prepareUserState() {
+//   if (ExecutionEnvironment.canUseDOM) {
+//     return {
+//       scrollTopPosition: window.scrollY,
+//       focusedElementId: document.activeElement?.id,
+//     };
+//   }
+
+//   return undefined;
+// }
 
 const TagQueryStringKey = "tags";
 
@@ -97,26 +111,35 @@ function ShowcaseFilters({ selectedTags, toggleTag, operator, setOperator }) {
     <div className="margin-top--l margin-bottom--md container">
       <div className="row">
         {TagList.map((tag) => {
-          const { label, description, icon } = Tags[tag];
+          const { label, description, color, icon } = Tags[tag];
+          const id = `showcase_checkbox_id_${tag}`;
           return (
-            <div key={tag} className="col col--2">
-              <ShowcaseCheckbox
-                // TODO add a proper tooltip
-                title={`${label}: ${description}`}
-                aria-label={`${label}: ${description}`}
-                name={tag}
-                label={
-                  icon ? (
-                    <>
-                      {icon} {label}
-                    </>
-                  ) : (
-                    label
-                  )
-                }
-                onChange={() => toggleTag(tag)}
-                checked={selectedTags.includes(tag)}
-              />
+            <div className={styles.checkboxListItem}>
+                <ShowcaseTooltip
+                id={id}
+                text={description}
+                anchorEl="#__docusaurus">
+                 <ShowcaseTagSelect
+                  tag={tag}
+                  id={id}
+                  label={label}
+                  icon={
+                    tag === 'favorite' ? (
+                      <FavoriteIcon svgClass={styles.svgIconFavoriteXs} />
+                    ) : (
+                      <span
+                        style={{
+                          backgroundColor: color,
+                          width: 10,
+                          height: 10,
+                          borderRadius: '50%',
+                          marginLeft: 8,
+                        }}
+                      />
+                    )
+                  }
+                />
+              </ShowcaseTooltip>
             </div>
           );
         })}
@@ -171,6 +194,7 @@ function Showcase() {
           setOperator={setOperator}
         />
         <ShowcaseCards filteredProjects={filteredProjects} />
+        
       </main>
     </Layout>
   );
