@@ -847,4 +847,15 @@ function ensureShowcaseValid(showcase) {
   }
 }
 
+function sortProjects() {
+  let result = Showcases;
+  // Sort by site name
+  result = sortBy(result, (user) => user.title.toLowerCase());
+  // Sort by favorite tag, favorites first
+  result = sortBy(result, (user) => !user.tags.includes('favorite'));
+  return result;
+}
+
+export const sortedProjects = sortProjects();
+
 Showcases.forEach(ensureShowcaseValid);

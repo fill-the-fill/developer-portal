@@ -34,6 +34,38 @@ function restoreUserState(userState) {
   window.scrollTo({top: scrollTopPosition});
 }
 
+function filterProjects(projects, selectedTags, operator, searchName) {
+  console.log(projects, selectedTags, operator, searchName);
+  if (searchName) {
+    // eslint-disable-next-line no-param-reassign
+    projects = projects.filter((showcase) =>
+      // console.log(showcase)
+      showcase.title.toLowerCase().includes(searchName.toLowerCase()),
+    );
+  }
+  if (selectedTags.length === 0) {
+    return projects;
+  }
+  return projects.filter((showcase) => {
+    if (showcase.tags.length === 0) {
+      return false;
+    }
+    if (operator === "AND") {
+      // no operator selection for the time being, we use OR
+      return selectedTags.every((tag) => showcase.tags.includes(tag));
+    } else {
+      return selectedTags.some((tag) => showcase.tags.includes(tag));
+    }
+  });
+}
+
+function useFilteredProjects(projects, selectedTags, operator, searchName) {
+  return useMemo(
+    () => filterProjects(projects, selectedTags, operator, searchName),
+    [projects, selectedTags, operator, searchName]
+  );
+}
+
 export function prepareUserState() {
   if (ExecutionEnvironment.canUseDOM) {
     return {
@@ -58,54 +90,6 @@ function replaceSearchTags(search, newTags) {
   return searchParams.toString();
 }
 
-function filterProjects(
-  projects,
-  selectedTags,
-  operator,
-  searchName,
-) {
-  if (searchName) {
-    // eslint-disable-next-line no-param-reassign
-    projects = projects.filter((project) =>
-      project.title.toLowerCase().includes(searchName.toLowerCase()),
-    );
-  }
-  if (selectedTags.length === 0) {
-    return projects;
-  }
-  return projects.filter((project) => {
-    if (project.tags.length === 0) {
-      return false;
-    }
-    if (operator === 'AND') {
-      return selectedTags.every((tag) => project.tags.includes(tag));
-    } else {
-      return selectedTags.some((tag) => project.tags.includes(tag));
-    }
-  })
-}
-
-
-function useFilteredUsers() {
-  const location = useLocation();
-  const [operator, setOperator] = useState('OR');
-  // On SSR / first mount (hydration) no tag is selected
-  const [selectedTags, setSelectedTags] = useState([]);
-  const [searchName, setSearchName] = useState(null);
-  // Sync tags from QS to state (delayed on purpose to avoid SSR/Client hydration mismatch)
-  useEffect(() => {
-    setSelectedTags(readSearchTags(location.search));
-    setOperator(readOperator(location.search));
-    setSearchName(readSearchName(location.search));
-    restoreUserState(location.state);
-  }, [location]);
-
-  return useMemo(
-    () => filterProjects(SortedShowcases, selectedTags, operator, searchName),
-    [selectedTags, operator, searchName],
-  );
-}
-
 function useSelectedTags() {
   // The search query-string is the source of truth!
   const location = useLocation();
@@ -113,6 +97,18 @@ function useSelectedTags() {
 
   // On SSR / first mount (hydration) no tag is selected
   const [selectedTags, setSelectedTags] = useState([]);
+  const [operator, setOperator] = useState('OR');
+  // On SSR / first mount (hydration) no tag is selected
+  const [searchName, setSearchName] = useState(null);
+
+  // Sync tags from QS to state (delayed on purpose to avoid SSR/Client hydration mismatch)
+  useEffect(() => {
+    const tags = readSearchTags(location.search);
+    setOperator(readOperator(location.search));
+    setSearchName(readSearchName(location.search));
+    setSelectedTags(tags);
+    restoreUserState(location.state);
+  }, [location, setSelectedTags]);
   
   // Update the QS value
   const toggleTag = useCallback(
@@ -153,7 +149,6 @@ function ShowcaseFilters() {
         {TagList.map((tag) => {
           const { label, description, color, icon } = Tags[tag];
           const id = `showcase_checkbox_id_${tag}`;
-          console.log(id, ':DDDD');
           return (
             <>
               <div className={styles.checkboxListItem}>
@@ -192,8 +187,7 @@ function ShowcaseFilters() {
   );
 }
 
-function ShowcaseCards() {
-  const filteredProjects = useFilteredUsers();
+function ShowcaseCards({ filteredProjects }) {
   return (
     <section className="container margin-top--lg">
       <h2>
@@ -231,6 +225,7 @@ function SearchBar() {
   const [value, setValue] = useState(null);
   useEffect(() => {
     setValue(readSearchName(location.search));
+    setSearchName(readSearchName(location.search))
   }, [location]);
   return (
     <div className={styles.searchContainer}>
@@ -261,8 +256,25 @@ function SearchBar() {
 
 function Showcase() {
   const { selectedTags, toggleTag } = useSelectedTags();
-  const filteredProjects = useFilteredUsers();
+  const [operator, setOperator] = useState("OR");
+  const [searchName, setSearchName] = useState(null);
+  const filteredProjects = useFilteredProjects(
+    SortedShowcases,
+    selectedTags,
+    operator,
+    searchName
+  );
 
+  if (filteredProjects.length === 0) {
+    return (
+      <section className="margin-top--lg margin-bottom--xl">
+        <div className="container padding-vert--md text--center">
+          <SearchBar />
+          <h3>No result</h3>
+        </div>
+      </section>
+    );
+  }
   return (
     <Layout title={TITLE} description={DESCRIPTION}>
       <ShowcaseHeader />
@@ -270,6 +282,10 @@ function Showcase() {
         <ShowcaseFilters
           selectedTags={selectedTags}
           toggleTag={toggleTag}
+          operator={operator}
+          setOperator={setOperator}
+          searchName={searchName}
+          setSearchName={setSearchName}
         />
         <SearchBar />
         <ShowcaseCards filteredProjects={filteredProjects} />

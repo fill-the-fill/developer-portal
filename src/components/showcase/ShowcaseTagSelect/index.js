@@ -9,6 +9,7 @@ import React, {
   useCallback,
   useState,
   useEffect,
+  forwardRef
 } from 'react';
 import {useHistory, useLocation} from '@docusaurus/router';
 import {toggleListItem} from '@site/src/utils/jsUtils';
@@ -30,7 +31,7 @@ function replaceSearchTags(search, newTags) {
   return searchParams.toString();
 }
 
-const ShowcaseTagSelect = React.forwardRef(
+const ShowcaseTagSelect = forwardRef(
   ({id, icon, label, tag, ...rest}, ref) => {
     const location = useLocation();
     const history = useHistory();
@@ -53,7 +54,6 @@ const ShowcaseTagSelect = React.forwardRef(
       <>
         <input
           type="checkbox"
-          onClick={(e) => console.log(e)}
           id={id}
           className={styles.screenReader}
           onKeyDown={(e) => {
@@ -77,7 +77,7 @@ const ShowcaseTagSelect = React.forwardRef(
           checked={selected}
           {...rest}
         />
-        <label htmlFor={id} className={styles.checkboxLabel} onClick={(e) => console.log(e)}>
+        <label htmlFor={id} className={styles.checkboxLabel}>
           {label}
           {icon}
         </label>
