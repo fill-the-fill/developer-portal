@@ -24,16 +24,6 @@ const DESCRIPTION = "See the awesome projects people are building with Cardano";
 const CTA = "Add your project";
 const FILENAME = "showcases.js";
 
-function restoreUserState(userState) {
-  const {scrollTopPosition, focusedElementId} = userState ?? {
-    scrollTopPosition: 0,
-    focusedElementId: undefined,
-  };
-  // @ts-expect-error: if focusedElementId is undefined it returns null
-  document.getElementById(focusedElementId)?.focus();
-  window.scrollTo({top: scrollTopPosition});
-}
-
 export function prepareUserState() {
   if (ExecutionEnvironment.canUseDOM) {
     return {
@@ -97,7 +87,6 @@ function useFilteredUsers() {
     setSelectedTags(readSearchTags(location.search));
     setOperator(readOperator(location.search));
     setSearchName(readSearchName(location.search));
-    restoreUserState(location.state);
   }, [location]);
 
   return useMemo(
@@ -121,7 +110,6 @@ function useSelectedTags() {
       const newTags = toggleListItem(tags, tag);
       const newSearch = replaceSearchTags(location.search, newTags);
       push({ ...location, search: newSearch });
-      // no need to call setSelectedTags, useEffect will do the sync
     },
     [location, push]
   );
@@ -153,7 +141,6 @@ function ShowcaseFilters() {
         {TagList.map((tag) => {
           const { label, description, color, icon } = Tags[tag];
           const id = `showcase_checkbox_id_${tag}`;
-          console.log(id, ':DDDD');
           return (
             <>
               <div className={styles.checkboxListItem}>
