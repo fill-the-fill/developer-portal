@@ -47,6 +47,6 @@
     "@types/node-fetch": "^2.5.12"
   },
   "workspaces": [
-    "packages/*"
+    "node_modules/*"
   ]
 }
