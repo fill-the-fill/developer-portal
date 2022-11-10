@@ -112,6 +112,10 @@ module.exports = {
               to: "/changelog",
             },
             {
+              label: "Changelog Yearly",
+              to: "/changelog-yearly",
+            },
+            {
               label: "How to Contribute",
               to: "docs/portal-contribute/",
             },
@@ -225,6 +229,7 @@ module.exports = {
     [
       require.resolve('./src/plugins/changelog/index.js'),
       {
+        id: 'changelog',
         blogTitle: 'Docusaurus changelog',
         blogDescription:
           'Keep yourself up-to-date about new features in every release',
@@ -245,6 +250,7 @@ module.exports = {
         },
       },
     ],
+    
   ],
   
   presets: [
