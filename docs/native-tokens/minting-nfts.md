@@ -5,8 +5,8 @@ sidebar_label: Minting NFTs
 description: How to mint NFTs on Cardano. 
 image: ../img/og/og-developer-portal.png
 ---
-
-<iframe width="100%" height="325" src="https://www.youtube.com/embed/n5x9bvrOHW0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture fullscreen"></iframe>
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 :::note
 There are many ways to realize NFTs with Cardano. However, in this guide, we will concentrate on the most dominant way, to attach storage references of other services like [IPFS](https://ipfs.io/) to our tokens.
@@ -142,9 +142,40 @@ cardano-cli address key-gen --verification-key-file payment.vkey --signing-key-f
 
 Those two keys can now be used to generate an address.
 
+<Tabs
+  defaultValue="preview"
+  groupId="network"
+  values={[
+    {label: 'Preview', value: 'preview'},
+    {label: 'Preprod', value: 'preprod'},
+    {label: 'Mainnet', value: 'mainnet'},
+  ]}>
+
+  <TabItem value="preview">
+
+  ```bash
+  cardano-cli address build --payment-verification-key-file payment.vkey --out-file payment.addr --preview
+  ```
+
+  </TabItem>
+
+  <TabItem value="preprod">
+
+```bash
+cardano-cli address build --payment-verification-key-file payment.vkey --out-file payment.addr --testnet-magic 1
+```
+
+  </TabItem>
+
+  <TabItem value="mainnet">
+
 ```bash
 cardano-cli address build --payment-verification-key-file payment.vkey --out-file payment.addr --mainnet
 ```
+
+  </TabItem>
+
+</Tabs>
 
 We will save our address hash in a variable called address.
 
@@ -159,9 +190,37 @@ Sending native assets requires sending at least 1 ada.
 So make sure the address you are going to use as the input for the minting transaction has sufficient funds. 
 For our example, the newly generated address was funded with 10 ada.
 
+<Tabs
+  defaultValue="preview"
+  groupId="network"
+  values={[
+    {label: 'Preview', value: 'preview'},
+    {label: 'Preprod', value: 'preprod'},
+    {label: 'Mainnet', value: 'mainnet'},
+  ]}>
+
+  <TabItem value="preview">
+
+```bash
+cardano-cli query utxo --address $address --preview
+```
+  </TabItem>
+
+  <TabItem value="preprod">
+
+```bash
+cardano-cli query utxo --address $address --testnet-magic 1
+```
+  </TabItem>
+
+  <TabItem value="mainnet">
+
 ```bash
 cardano-cli query utxo --address $address --mainnet
 ```
+  </TabItem>
+
+</Tabs>
 
 You should see something like this.
 ```bash
@@ -173,9 +232,40 @@ You should see something like this.
 
 For our transaction calculations, we need some of the current protocol parameters. The parameters can be saved in a file called `protocol.json` with this command:
 
+<Tabs
+  defaultValue="preview"
+  groupId="network"
+  values={[
+    {label: 'Preview', value: 'preview'},
+    {label: 'Preprod', value: 'preprod'},
+    {label: 'Mainnet', value: 'mainnet'},
+  ]}>
+
+  <TabItem value="preview">
+
+```bash
+cardano-cli query protocol-parameters --preview --out-file protocol.json
+```
+
+  </TabItem>
+
+  <TabItem value="preprod">
+
+```bash
+cardano-cli query protocol-parameters --testnet-magic 1 --out-file protocol.json
+```
+
+  </TabItem>
+
+  <TabItem value="mainnet">
+
 ```bash
 cardano-cli query protocol-parameters --mainnet --out-file protocol.json
 ```
+
+  </TabItem>
+
+</Tabs>
 
 ### Creating the policyID
 Just as in generating native assets, we will need to generate some policy-related files like key pairs and a policy script.
@@ -225,6 +315,59 @@ As you can see, we need to adjust two values here, the `slot` number as well as 
 To set everything at once and copy and paste it, use this command(s):
 **You need to have the `jq` installed to parse the tip correctly!**
 
+<Tabs
+  defaultValue="preview"
+  groupId="network"
+  values={[
+    {label: 'Preview', value: 'preview'},
+    {label: 'Preprod', value: 'preprod'},
+    {label: 'Mainnet', value: 'mainnet'},
+  ]}>
+
+  <TabItem value="preview">
+
+```bash
+echo "{" >> policy/policy.script
+echo "  \"type\": \"all\"," >> policy/policy.script 
+echo "  \"scripts\":" >> policy/policy.script 
+echo "  [" >> policy/policy.script 
+echo "   {" >> policy/policy.script 
+echo "     \"type\": \"before\"," >> policy/policy.script 
+echo "     \"slot\": $(expr $(cardano-cli query tip --preview | jq .slot?) + 10000)" >> policy/policy.script
+echo "   }," >> policy/policy.script 
+echo "   {" >> policy/policy.script
+echo "     \"type\": \"sig\"," >> policy/policy.script 
+echo "     \"keyHash\": \"$(cardano-cli address key-hash --payment-verification-key-file policy/policy.vkey)\"" >> policy/policy.script 
+echo "   }" >> policy/policy.script
+echo "  ]" >> policy/policy.script 
+echo "}" >> policy/policy.script
+```
+
+  </TabItem>
+
+  <TabItem value="preprod">
+
+```bash
+echo "{" >> policy/policy.script
+echo "  \"type\": \"all\"," >> policy/policy.script 
+echo "  \"scripts\":" >> policy/policy.script 
+echo "  [" >> policy/policy.script 
+echo "   {" >> policy/policy.script 
+echo "     \"type\": \"before\"," >> policy/policy.script 
+echo "     \"slot\": $(expr $(cardano-cli query tip --testnet-magic 1 | jq .slot?) + 10000)" >> policy/policy.script
+echo "   }," >> policy/policy.script 
+echo "   {" >> policy/policy.script
+echo "     \"type\": \"sig\"," >> policy/policy.script 
+echo "     \"keyHash\": \"$(cardano-cli address key-hash --payment-verification-key-file policy/policy.vkey)\"" >> policy/policy.script 
+echo "   }" >> policy/policy.script
+echo "  ]" >> policy/policy.script 
+echo "}" >> policy/policy.script
+```
+
+  </TabItem>
+
+  <TabItem value="mainnet">
+
 ```bash
 echo "{" >> policy/policy.script
 echo "  \"type\": \"all\"," >> policy/policy.script 
@@ -242,6 +385,10 @@ echo "  ]" >> policy/policy.script
 echo "}" >> policy/policy.script
 ```
 
+  </TabItem>
+
+</Tabs>
+
 **If this command is not working, please set the key hash and correct slot manually.**
 
 To generate the `keyHash`, use the following command:
@@ -250,9 +397,41 @@ cardano-cli address key-hash --payment-verification-key-file policy/policy.vkey
 ```
 
 To calculate the correct slot, query the current slot and add 10000 to it:
+
+<Tabs
+  defaultValue="preview"
+  groupId="network"
+  values={[
+    {label: 'Preview', value: 'preview'},
+    {label: 'Preprod', value: 'preprod'},
+    {label: 'Mainnet', value: 'mainnet'},
+  ]}>
+
+  <TabItem value="preview">
+
+```bash
+cardano-cli query tip --preview
+```
+
+  </TabItem>
+
+  <TabItem value="preprod">
+
+```bash
+cardano-cli query tip --testnet-magic 1
+```
+
+  </TabItem>
+
+  <TabItem value="mainnet">
+
 ```bash
 cardano-cli query tip --mainnet
 ```
+
+  </TabItem>
+
+</Tabs>
 
 Make a new file called policy.script in the policy folder 
 ```bash
@@ -339,9 +518,40 @@ Let's begin building our transaction.
 Before we start, we will again need some setup to make the transaction building easier.
 Query your payment address and take note of the different values present.
 
+<Tabs
+  defaultValue="preview"
+  groupId="network"
+  values={[
+    {label: 'Preview', value: 'preview'},
+    {label: 'Preprod', value: 'preprod'},
+    {label: 'Mainnet', value: 'mainnet'},
+  ]}>
+
+  <TabItem value="preview">
+
+```bash
+cardano-cli query utxo --address $address --preview
+```
+
+  </TabItem>
+
+  <TabItem value="preprod">
+
+```bash
+cardano-cli query utxo --address $address --testnet-magic 1
+```
+
+  </TabItem>
+
+  <TabItem value="mainnet">
+
 ```bash
 cardano-cli query utxo --address $address --mainnet
 ```
+
+  </TabItem>
+
+</Tabs>
 
 Your output should look something like this (fictional example):
 
@@ -378,6 +588,55 @@ echo $script
 
 If everything is set, run the following command:
 
+<Tabs
+  defaultValue="preview"
+  groupId="network"
+  values={[
+    {label: 'Preview', value: 'preview'},
+    {label: 'Preprod', value: 'preprod'},
+    {label: 'Mainnet', value: 'mainnet'},
+  ]}>
+
+  <TabItem value="preview">
+
+```bash
+cardano-cli transaction build \
+--preview \
+--alonzo-era \
+--tx-in $txhash#$txix \
+--tx-out $address+$output+"$tokenamount $policyid.$tokenname" \
+--change-address $address \
+--mint="$tokenamount $policyid.$tokenname" \
+--minting-script-file $script \
+--metadata-json-file metadata.json  \
+--invalid-hereafter $slotnumber \
+--witness-override 2 \
+--out-file matx.raw
+```
+
+  </TabItem>
+  
+  <TabItem value="preprod">
+
+```bash
+cardano-cli transaction build \
+--testnet-magic 1 \
+--alonzo-era \
+--tx-in $txhash#$txix \
+--tx-out $address+$output+"$tokenamount $policyid.$tokenname" \
+--change-address $address \
+--mint="$tokenamount $policyid.$tokenname" \
+--minting-script-file $script \
+--metadata-json-file metadata.json  \
+--invalid-hereafter $slotnumber \
+--witness-override 2 \
+--out-file matx.raw
+```
+
+  </TabItem>
+
+  <TabItem value="mainnet">
+
 ```bash
 cardano-cli transaction build \
 --mainnet \
@@ -392,6 +651,10 @@ cardano-cli transaction build \
 --witness-override 2 \
 --out-file matx.raw
 ```
+
+  </TabItem>
+
+</Tabs>
 
 The above command may generate output as per below:
 
@@ -430,15 +693,80 @@ The signed transaction will be saved in a new file called <i>matx.signed</i> ins
 :::
 
 Now we are going to submit the transaction, therefore minting our native assets:
+
+<Tabs
+  defaultValue="preview"
+  groupId="network"
+  values={[
+    {label: 'Preview', value: 'preview'},
+    {label: 'Preprod', value: 'preprod'},
+    {label: 'Mainnet', value: 'mainnet'},
+  ]}>
+
+  <TabItem value="preview">
+
+```bash
+cardano-cli transaction submit --tx-file matx.signed --preview
+```
+
+  </TabItem>
+
+  <TabItem value="preprod">
+
+```bash
+cardano-cli transaction submit --tx-file matx.signed --testnet-magic 1
+```
+
+  </TabItem>
+
+  <TabItem value="mainnet">
+
 ```bash
 cardano-cli transaction submit --tx-file matx.signed --mainnet
 ```
 
+  </TabItem>
+
+</Tabs>
+
+
 Congratulations, we have now successfully minted our own token.
-After a couple of seconds, we can check the output address
+After a couple of seconds, we can check the output address.
+
+<Tabs
+  defaultValue="preview"
+  groupId="network"
+  values={[
+    {label: 'Preview', value: 'preview'},
+    {label: 'Preprod', value: 'preprod'},
+    {label: 'Mainnet', value: 'mainnet'},
+  ]}>
+
+  <TabItem value="preview">
+
+```bash
+cardano-cli query utxo --address $address --preview
+```
+
+  </TabItem>
+
+  <TabItem value="preprod">
+
+```bash
+cardano-cli query utxo --address $address --testnet-magic 1
+```
+
+  </TabItem>
+
+  <TabItem value="mainnet">
+
 ```bash
 cardano-cli query utxo --address $address --mainnet
 ```
+
+  </TabItem>
+
+</Tabs>
 
 and should see something like this:
 
@@ -471,9 +799,40 @@ Here we are setting the `output` value to `1400000` Lovelace which is equivalent
 
 The transaction looks like this:
 
+<Tabs
+  defaultValue="preview"
+  groupId="network"
+  values={[
+    {label: 'Preview', value: 'preview'},
+    {label: 'Preprod', value: 'preprod'},
+    {label: 'Mainnet', value: 'mainnet'},
+  ]}>
+
+  <TabItem value="preview">
+
+```bash
+cardano-cli transaction build --preview --alonzo-era --tx-in $txhash#$txix --tx-out $address+$burnoutput --mint="-1 $policyid.$tokenname" --minting-script-file $script --change-address $address --invalid-hereafter $slot --witness-override 2 --out-file burning.raw
+```
+
+  </TabItem>
+
+  <TabItem value="preprod">
+
+```bash
+cardano-cli transaction build --testnet-magic 1 --alonzo-era --tx-in $txhash#$txix --tx-out $address+$burnoutput --mint="-1 $policyid.$tokenname" --minting-script-file $script --change-address $address --invalid-hereafter $slot --witness-override 2 --out-file burning.raw
+```
+
+  </TabItem>
+
+  <TabItem value="mainnet">
+
 ```bash
 cardano-cli transaction build --mainnet --alonzo-era --tx-in $txhash#$txix --tx-out $address+$burnoutput --mint="-1 $policyid.$tokenname" --minting-script-file $script --change-address $address --invalid-hereafter $slot --witness-override 2 --out-file burning.raw
 ```
+
+  </TabItem>
+
+</Tabs>
 
 :::note
 The minting parameter is now called with a negative value, therefore destroying one token.
@@ -481,10 +840,77 @@ The minting parameter is now called with a negative value, therefore destroying 
 
 
 Sign the transaction.
+
+<Tabs
+  defaultValue="preview"
+  groupId="network"
+  values={[
+    {label: 'Preview', value: 'preview'},
+    {label: 'Preprod', value: 'preprod'},
+    {label: 'Mainnet', value: 'mainnet'},
+  ]}>
+
+  <TabItem value="preview">
+
+```bash
+cardano-cli transaction sign  --signing-key-file payment.skey  --signing-key-file policy/policy.skey --preview  --tx-body-file burning.raw --out-file burning.signed
+```
+
+  </TabItem>
+
+  <TabItem value="preprod">
+
+```bash
+cardano-cli transaction sign  --signing-key-file payment.skey  --signing-key-file policy/policy.skey --testnet-magic 1  --tx-body-file burning.raw --out-file burning.signed
+```
+
+  </TabItem>
+
+  <TabItem value="mainnet">
+
 ```bash
 cardano-cli transaction sign  --signing-key-file payment.skey  --signing-key-file policy/policy.skey --mainnet  --tx-body-file burning.raw --out-file burning.signed
 ```
+
+  </TabItem>
+
+</Tabs>
+
+
+<Tabs
+  defaultValue="preview"
+  groupId="network"
+  values={[
+    {label: 'Preview', value: 'preview'},
+    {label: 'Preprod', value: 'preprod'},
+    {label: 'Mainnet', value: 'mainnet'},
+  ]}>
+
+  <TabItem value="preview">
+
 Full send.
+
+```bash
+cardano-cli transaction submit --tx-file burning.signed --preview
+```
+  </TabItem>
+
+  <TabItem value="preprod">
+
+Full send.
+
+```bash
+cardano-cli transaction submit --tx-file burning.signed --testnet-magic 1
+```
+  </TabItem>
+
+  <TabItem value="mainnet">
+
+Full send.
+
 ```bash
 cardano-cli transaction submit --tx-file burning.signed --mainnet
 ```
+  </TabItem>
+
+</Tabs>
